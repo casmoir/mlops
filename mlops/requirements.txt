@@ -1,0 +1,7 @@
+sklearn
+pandas
+flask
+joblib
+traceback
+os
+flask_restx
