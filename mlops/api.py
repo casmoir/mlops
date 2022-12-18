@@ -8,17 +8,26 @@ import joblib
 import traceback
 from sklearn.metrics import mean_squared_error
 import os
-from flask_restx import Api, Resource, reqparse
+from flask_restx import Api, Resource, reqparse, fields
 from modelClass import modelClass
 import json
 
 app = Flask(__name__)
 application = Api(app)
 
-learnDefaultModel_param = reqparse.RequestParser()
-learnDefaultModel_param.add_argument('model_id', help='Unique model id')
-learnDefaultModel_param.add_argument('model', help='name of the model', choices=['RandomForestRegressor', 'Ridge'])
-learnDefaultModel_param.add_argument('params', help='dict with model parameters', type = dict)
+learnDefaultModel_param = application.model('learn default model',
+                             {'model_id': fields.Integer(description='Model id', example='0'),
+                              'model': fields.String(description='name of the model', example='Ridge'),
+                              'params': fields.Arbitrary(description='dict with model parameters', example= {'alpha': 0.1, 'max_iter': 100})})
+
+predictOnCustomData_param = application.model("get predicion on user's custom data",
+                              {'model_name': fields.String(description='Name of existing model with id', example='0Ridge'),
+                              'params': fields.Arbitrary(description='dict with model features for prediction', example= {"0":0.05479,"1":33.0,"2":2.18,"3":0.0,"4":0.472,
+                "5":6.616,"6":58.1,"7":3.3700, "8":7.0,"9":222.0,
+                "10":18.4,"11":393.36,"12":8.93})})
+
+deleteModel_param = application.model('delete model',
+                             {'model': fields.String(description='name of the model with id', example='Ridge')})
 
 
 @application.route("/getListOfModels", doc={'description': 'Get list of available models, no params'})
@@ -35,6 +44,7 @@ class getListOfModels(Resource):
         return jsonify({"Model 1": 'Ridge', "Model 2": 'RandomForestRegressor'})
 
 @application.route("/learnDefaultModel", doc={'description': 'Learn default model and get prediction'})
+@application.doc(params={'model_id': 'id of model', 'model': 'name of model', 'params' : 'hyperparameters for model'})
 class learnDefaultModel(Resource):
     @application.response(200, 'OK')
     @application.response(400, 'BAD REQUEST')
@@ -45,82 +55,83 @@ class learnDefaultModel(Resource):
         '''
         API to learn default model and get prediction
         params:
-        json: {"model":"Ridge", "0":0.1, "1":100}
+        json: {'model_id': 'default', 'model': 'Ridge', 'params': {'alpha': 0.1, 'max_iter': 100}}
         '''
         print("learnDefaultModel")
 
-        rgs = learnDefaultModel_param.parse_args()
-        print(rgs)
-        if rgs['model'] not in ['Ridge', 'RandomForestRegressor']:
-            return "Model is not available", 400
-        rgs.params = dict(rgs.params)
+        model_id = application.payload['model_id']
+        model_name= application.payload['model']
+        data = (application.payload['params'])
 
-        model = modelClass(rgs['model'], rgs.params)
+        if model_name not in ['Ridge', 'RandomForestRegressor']:
+            return "Model is not available", 400
+
+        model = modelClass(model_name, data)
 
         model.fit()
-        model.save_model(rgs['model_id'])
+        model.save_model(model_id)
         pred= model.predict(model.X_test)
 
         return jsonify({"predicion": list(pred)})
 
 
 @application.route("/predictCustomData", doc={'description': 'Use default model and get prediction on custom data'})
+@application.doc(params={'model_name': 'name of model with id', 'params': 'features to get prediction'})
 class predictOnCustomData(Resource):
     @application.response(200, 'OK')
     @application.response(400, 'BAD REQUEST')
-
+    @application.expect(predictOnCustomData_param)
 
     def post(self):
         '''
         API to get predicion on user's custom data model
         params:
-        json: [{"model":"Ridge", "0":0.1,"1":100},
-                {"0":0.05479,"1":33.0,"2":2.18,"3":0.0,"4":0.472,
+        json: {"model_name":"0Ridge"}, 
+                "params":{"0":0.05479,"1":33.0,"2":2.18,"3":0.0,"4":0.472,
                 "5":6.616,"6":58.1,"7":3.3700, "8":7.0,"9":222.0,
-                "10":18.4,"11":393.36,"12":8.93}]
+                "10":18.4,"11":393.36,"12":8.93}
         '''
         print("predictOnCustomData")
-        json_ = request.get_json()
-        if json_[0]['model'] not in ['Ridge', 'RandomForestRegressor']:
-            return "Model is not available", 400
-        print(json_[0]['model'])
 
-        model = modelClass(json_[0]['model'], json_[0]['0'], json_[0]['1'])
+  
+        model_name= application.payload['model_name']
+        data = (application.payload['params'])
 
-        model.fit()
-        model.save_model()
-
-        X_test = json_[1]
+        X_test = data
         
-        clmns = joblib.load(model.model_name +'_columns.pkl')
+        try:
+            clmns = joblib.load('saved_models/' + model_name +'_columns.pkl')
+        except:
+            return "Model is not not available", 400
         X_test = list(X_test.values())
 
         X_test = pd.DataFrame([X_test], columns=clmns) 
 
-        model.fit()
-        model.save_model()
+        model = joblib.load('saved_models/'+ model_name +".pkl") 
+
         pred = model.predict(X_test)
 
         return jsonify({"predicion": list(pred)})
 
 @application.route("/deleteModel", doc={'description': 'Delete model'})
+@application.doc(params={'model': 'name of model with id'})
 class deleteModel(Resource):
     @application.response(200, 'OK')
     @application.response(400, 'BAD REQUEST')
+    @application.expect(deleteModel_param)
 
     def delete(min_samples_leaf):
         '''
         API to delete given model
         params:
-        json: [{"model":"Ridge"}]
+        json: {"model":"0Ridge"}
         '''
         print("deleteModel")
-        json_ = request.get_json()
-        if json_[0]['model'] not in ['Ridge', 'RandomForestRegressor']:
-            return "Model is not available",400
-        else:
-            try:
-                res = os.remove("./"+json_[0]['model']+'.pkl')
-                return str('Model ' + json_[0]['model'] + " is removed"),200
-            except:
-                return "Model is not found",400
+
+        model_name= application.payload['model']
+
+        try:
+            res = os.remove('saved_models/'+ model_name +".pkl") 
+            return str('Model ' + model_name + " is removed"),200
+        except:
+            return "Model is not found",400

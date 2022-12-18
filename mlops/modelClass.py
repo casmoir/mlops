@@ -62,11 +62,11 @@ class modelClass:
         joblib.dump(rnd_columns, 'saved_models/'+str(name) + self.model_name +'_columns.pkl')
         print("Model Colums are Saved")
 
-    def load_model(self, name = 'default'):
+    def load_model(self, name = 'default', mode = ''):
         '''
         Load the model
         '''
-        model = joblib.load('saved_models/'+str(name) + self.model_name +'.pkl')
+        model = joblib.load('saved_models/'+str(name) + self.model_name + mode + '.pkl')
         print(model)
         print("Model is loaded")
         return model
