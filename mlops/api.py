@@ -12,6 +12,7 @@ from flask_restx import Api, Resource, reqparse, fields
 from modelClass import modelClass
 import json
 
+
 app = Flask(__name__)
 application = Api(app)
 

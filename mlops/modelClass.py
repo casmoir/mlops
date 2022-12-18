@@ -9,6 +9,20 @@ from flask import Flask, request, jsonify
 import joblib
 import traceback
 from sklearn.metrics import mean_squared_error
+import psycopg2
+from sqlalchemy import create_engine
+
+
+def get_data():
+    engine = create_engine('postgresql://postgres:password@localhost:5432/mlops')
+    df = pd.read_sql_query('select * from "boston"',con=engine)
+    df = df.iloc[: , 1:]
+    y = df['target']
+    X = df.drop('target', axis = 1)
+    print(X)
+    return X,y
+
+#get_data()
 
 class modelClass:
     def __init__(self, input_model, model_params):
@@ -19,12 +33,13 @@ class modelClass:
         hyperparam1 = int, hyperparam 1 for model
         hyperparam2 = int, hyperparam 2 for model
         '''
-        data_url = '/Users/anastasiaraeva/mlops/mlops/mlops/data/boston.csv'
-        raw_df = pd.DataFrame(pd.read_csv(data_url, sep = ';'))
-        raw_df = raw_df.iloc[: , 1:]
+        #data_url = '/Users/anastasiaraeva/mlops/mlops/mlops/data/boston.csv'
+        #raw_df = pd.DataFrame(pd.read_csv(data_url, sep = ';'))
+        #raw_df = raw_df.iloc[: , 1:]
         #print(raw_df)
-        self.y = raw_df['target']
-        self.X = raw_df.drop('target', axis = 1)
+        #self.y = raw_df['target']
+        #self.X = raw_df.drop('target', axis = 1)
+        self.X, self.y = get_data()
 
         #X_raw, self.y = load_boston(return_X_y=True)
         #self.X = pd.DataFrame(X_raw)

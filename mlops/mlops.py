@@ -10,6 +10,7 @@ from flask_restx import Api, Resource
 from modelClass import modelClass
 from api import *
 
+
 if __name__ == "__main__":
     try:
         port = int(sys.argv[1])
