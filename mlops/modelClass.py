@@ -17,7 +17,7 @@ def get_data():
     df = df.iloc[: , 1:]
     y = df['target']
     X = df.drop('target', axis = 1)
-    print(X)
+    #print(X)
     return X,y
 
 #get_data()
@@ -90,6 +90,6 @@ class modelClass:
         params:
         x_test : data frame of features for prediction
         '''
-        model = self.load_model()
-        y_pred = model.predict(x_test)
+        #model = self.load_model()
+        y_pred = self.model.predict(x_test)
         return y_pred
