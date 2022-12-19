@@ -1,16 +1,16 @@
-from sklearn.datasets import load_boston
-from sklearn.linear_model import Ridge
+#from sklearn.datasets import load_boston
+#from sklearn.linear_model import Ridge
 import pandas as pd
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import train_test_split
-from flask import Flask, request, jsonify
+#rom sklearn.ensemble import RandomForestRegressor
+#from sklearn.model_selection import train_test_split
+from flask import Flask, jsonify
 import joblib
-import traceback
-from sklearn.metrics import mean_squared_error
+#import traceback
+#from sklearn.metrics import mean_squared_error
 import os
-from flask_restx import Api, Resource, reqparse, fields
+from flask_restx import Api, Resource, fields
 from modelClass import modelClass
-import json
+#import json
 
 
 app = Flask(__name__)

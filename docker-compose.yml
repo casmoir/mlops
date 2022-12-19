@@ -1,20 +1,12 @@
-version: '3'
-services:
-  flask:
-    build: ./mlops
-   
-    container_name: mlops
-  
-    environment:
-  
-      - FLASK_ENV=development
-      - PYTHONUNBUFFERED=True                   
+version: '3.8'
 
-    restart: on-failure
-    
+services:
+  web:
+    build:
+      context: .
+      dockerfile: mlops/Dockerfile
+    command: python mlops/mlops.py
     volumes:
-      - ./backend:/backend
-   
+      - .:/mlops
     ports:
-      - "5000:12345"
-    command: python mlops.py
+      - "12345:12345"

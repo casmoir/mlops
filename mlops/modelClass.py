@@ -1,15 +1,13 @@
 import pandas as pd
 import joblib
-from sklearn.datasets import load_boston
+#from sklearn.datasets import load_boston
 from sklearn.linear_model import Ridge
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
-from flask import Flask, request, jsonify
+#from flask import Flask, request, jsonify
 import joblib
-import traceback
 from sklearn.metrics import mean_squared_error
-import psycopg2
 from sqlalchemy import create_engine
 
 

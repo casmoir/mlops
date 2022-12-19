@@ -2,7 +2,6 @@ from sqlalchemy import create_engine
 import pandas as pd
 
 
-
 #engine = create_engine(postgresql://username:password@host:5432/mlops)
 
 

@@ -1,7 +1,6 @@
-sklearn
+scikit-learn
 pandas
 flask
 joblib
-traceback
-os
 flask_restx
+Flask-SQLAlchemy
